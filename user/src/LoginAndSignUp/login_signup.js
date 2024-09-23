@@ -31,8 +31,31 @@ const LogInAndSignUp = () => {
   const [errors, setErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState(0);
   const navigate = useNavigate();
+  const [touched, setTouched] = useState({
+    email: false,
+    password: false,
+    // Other fields if needed
+  });
+  const emailRegex = /^[a-zA-Z0-9_.+-]+@[a-zA-Z]+\.[a-zA-Z]{2,}$/;
 
   const handleChange = (e) => {
+
+    if (!touched[e.target.name]) {
+      setTouched((prevTouched) => ({ ...prevTouched, [e.target.name]: true }));
+    }
+
+    // Handle email validation as the user types
+    if (e.target.name === "email") {
+      if (touched.email && !emailRegex.test(e.target.value)) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          email: "Invalid email domain. Accepted domains are yahoo, gmail, microsoft, etc and TLDs such as .com, .co, .uk, .in, etc",
+        }));
+      } else {
+        setErrors((prevErrors) => ({ ...prevErrors, email: "" }));
+      }
+    }
+
     if (e.target.name === "password") {
       const strength = calculatePasswordStrength(e.target.value);
       setPasswordStrength(strength);
