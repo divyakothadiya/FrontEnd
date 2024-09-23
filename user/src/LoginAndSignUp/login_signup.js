@@ -23,7 +23,7 @@ const LogInAndSignUp = () => {
     password: "",
     password2: "",
     address: "",
-    contactNo: "",
+    phone_number: "",
     showPassword: false,
     tc: true
   });
@@ -83,16 +83,16 @@ const LogInAndSignUp = () => {
           const response = await loginUser(loginData);
           
           if (response.isProfileComplete) {
-            console.log("user logged in:", response.isProfileComplete);
-            navigate("/");
+            console.log("user logged in profile complete:", response.isProfileComplete);
+            alert("profile completed")
           } else {
-            console.log("user logged in:", response.isProfileComplete);
+            console.log("user logged in profile not complete:", response.isProfileComplete);
             navigate("/profile");
           }
         } else {
           console.log("user signed up:", formData);
           await createUser(formData);
-          navigate("/login");
+          window.location.reload();
         }
       } catch (e) {
         console.log(e);
@@ -109,7 +109,7 @@ const LogInAndSignUp = () => {
       password: "",
       password2: "",
       address: "",
-      contactNo: "",
+      phone_number: "",
       showPassword: false,
       tc: true
     });
@@ -163,14 +163,14 @@ const LogInAndSignUp = () => {
               <TextField
                 fullWidth
                 onChange={handleChange}
-                name="contactNo"
-                value={formData.contactNo}
+                name="phone_number"
+                value={formData.phone_number}
                 margin="normal"
                 type={"text"}
                 variant="outlined"
                 label="Contact No"
-                error={!!errors.contactNo}
-                helperText={errors.contactNo}
+                error={!!errors.phone_number}
+                helperText={errors.phone_number}
               />
             </>
           )}

@@ -11,7 +11,7 @@ export function useServicesHook() {
         return axiosInstance.post('user/register/', userDetails)
             .then(data => {
                 if (data) {
-                    console.log("userDetails:",data)
+                    alert("User created successfully");
                 }
             })
             .catch(error => Promise.reject(error.message));
@@ -22,6 +22,7 @@ export function useServicesHook() {
         return axiosInstance.post('user/login/', loginDetails)
             .then(data => {
                 if (data) {
+                    alert("User loggedin successfully");
                     console.log("is_profile_complete:", data.data.is_profile_complete);
                     console.log("token:",  data.data.token["access"]);
 
