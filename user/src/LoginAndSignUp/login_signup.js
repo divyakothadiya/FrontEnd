@@ -107,7 +107,7 @@ const LogInAndSignUp = () => {
           
           if (response.isProfileComplete) {
             console.log("user logged in profile complete:", response.isProfileComplete);
-            alert("profile completed")
+            navigate("/home");
           } else {
             console.log("user logged in profile not complete:", response.isProfileComplete);
             navigate("/profile");
