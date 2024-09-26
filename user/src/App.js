@@ -8,6 +8,9 @@ import HomePage from './Home/home_page';
 import NavigationBar from './Home/navigationbar';
 import ProductForm from './Product/product_register';
 import ProductList from './Product/product_list';
+import RHomePage from './Retailer/R_Home/r_homepage';
+import RProductList from './Retailer/R_Product/rproduct_list';
+import AddProductPage from './Retailer/R_Product/rproduct_add';
 
 function App() {
   return (
@@ -18,7 +21,10 @@ function App() {
             <Route exact path="/profile"  element={<UserComponent/>} />
             <Route exact path="/read"  element={<ReadOnlyDetails/>} />
             <Route exact path="/home"  element={<HomePage/>} />
-            <Route exact path="/add-product"  element={<ProductForm/>} />
+            <Route exact path="/r-home"  element={<RHomePage/>} />
+            <Route exact path="/add-product"  element={<AddProductPage/>} />
+            <Route exact path="/rview-product"  element={<RProductList/>} />
+            <Route exact path="/add-product"  element={<RProductList/>} />            
             <Route exact path="/view-products"  element={<ProductList/>} />
         </Route>
       </Routes>

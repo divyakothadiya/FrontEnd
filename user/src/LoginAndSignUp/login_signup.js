@@ -164,14 +164,22 @@ const LogInAndSignUp = () => {
           };
           console.log("user logged in:", loginData);
           const response = await loginUser(loginData);
-          
-          if (response.isProfileComplete) {
-            console.log("user logged in profile complete:", response.isProfileComplete);
+
+          if (signupType.is_customer && response.isProfileComplete) {
             navigate("/home");
+          } else if (signupType.is_retailer && response.isProfileComplete) {
+            navigate("/r-home");
           } else {
-            console.log("user logged in profile not complete:", response.isProfileComplete);
             navigate("/profile");
           }
+
+          // if (response.isProfileComplete) {
+          //   console.log("user logged in profile complete:", response.isProfileComplete);
+          //   navigate("/home");
+          // } else {
+          //   console.log("user logged in profile not complete:", response.isProfileComplete);
+          //   navigate("/profile");
+          // }
         } else {
           let payload = {
               username: formData.username,
