@@ -51,5 +51,48 @@ export function useServicesHook() {
             .catch(error => Promise.reject(error.message));
     }, []);
 
-    return { createUser,loginUser, updateUser};
+    const verifyUser = useCallback((otpDetails) => {
+        
+        return axiosInstance.post('user/verify/', otpDetails)
+            .then(data => {
+                if (data) {
+                    console.log("userDetails:",data);
+                }
+            })
+            .catch(error => Promise.reject(error.message));
+    },[]);
+
+    const getProducts = useCallback(() => {
+        return axiosInstance.get('product/product-list/') // Assuming get request for getting user
+            .then(data => {
+                if (data) {
+                    console.log("products:", data.data);
+                    return data.data.data;
+                }
+            })
+            .catch(error => Promise.reject(error.message));
+    }, []);
+
+    const addProduct = useCallback((productDetails) => {
+        return axiosInstance.post('product/product-create/', productDetails) // Assuming get request for getting user
+            .then(data => {
+                if (data) {
+                    console.log("products:", data.data);
+                    //return data.data.data;
+                }
+            })
+            .catch(error => Promise.reject(error.message));
+    }, []);
+
+    const updateProduct = useCallback((productDetails) => {
+        return axiosInstance.put('product/product-update/', productDetails) // Assuming PUT request for updating user
+            .then(data => {
+                if (data) {
+                    console.log("Updated product details:", data);
+                }
+            })
+            .catch(error => Promise.reject(error.message));
+    }, []);
+
+    return { createUser,loginUser, updateUser, getProducts, addProduct, updateProduct, verifyUser};
 }

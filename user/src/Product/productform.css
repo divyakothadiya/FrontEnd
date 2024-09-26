@@ -1,0 +1,72 @@
+/* Container to hold both the image and the form */
+.product-form-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    padding: 3.5%; 
+    margin: 50px auto;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  /* Left Side Image */
+.product-image img {
+    width: 400px; /* Adjust the size of the image */
+    height: 100%;
+    object-fit: cover;
+    border-right: 2px solid #ddd;
+  }
+  
+  /* Right Side Form */
+.product-form {
+    flex: 1;
+    padding: 20px;
+  }
+  
+.product-form h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #333;
+  }
+  
+.form-group {
+    margin-bottom: 15px;
+  }
+  
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+textarea {
+    height: 100px;
+  }
+  
+button {
+    background-color: #0062cc;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+  
+button:hover {
+    background-color: #004da2;
+  }
+  

@@ -7,6 +7,9 @@ import {
   LinearProgress,
   InputAdornment,
   IconButton,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from "@mui/material";
 import LoginOutlinedIcon from "@mui/icons-material/LoginOutlined";
 import HowToRegOutlinedIcon from "@mui/icons-material/HowToRegOutlined";
@@ -14,9 +17,13 @@ import { useNavigate } from "react-router-dom";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useServicesHook } from "../Hooks/serviceHooks";
+import SignupPopup from "./signup_popup";
 
 const LogInAndSignUp = () => {
   const [isSignup, setIsSignup] = useState(false);
+  const [isSignupR, setIsSignupR] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);  
+  const [userType, setUserType] = useState("is_customer"); 
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -24,8 +31,10 @@ const LogInAndSignUp = () => {
     password2: "",
     address: "",
     phone_number: "",
+    gst_no: "",
+    organization: "",
     showPassword: false,
-    tc: true
+    tc: true,
   });
   const { createUser, loginUser } = useServicesHook();
   const [errors, setErrors] = useState({});
@@ -67,6 +76,50 @@ const LogInAndSignUp = () => {
     }));
   };
 
+  // Handle radio button changes for user type selection
+  const handleUserTypeChange = (e) => {
+    setUserType(e.target.value);
+  };
+
+  // State for handling which checkboxes are checked
+  const [signupType, setSignupType] = useState({ is_customer: false, is_retailer: false });
+
+  // Handle checkbox change
+  const handleCheckboxChange = (e) => {
+    setSignupType({ ...signupType, [e.target.name]: e.target.checked });
+  };
+
+  const handleToggleToLogin = () => {
+    setIsSignup(false);  // Directly switch to the login form
+    setShowPopup(false); // Make sure the popup is closed
+  };
+
+  // Show popup when the user clicks "Sign Up"
+  const handleSignupClick = (event) => {
+    event.preventDefault();
+    setShowPopup(true);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    // Check if any checkbox is selected
+    if (signupType.is_customer || signupType.is_retailer) {
+      setIsSignup(true); // Show the signup form if any checkbox is checked
+    } else {
+      setIsSignup(false); // Show the login form if no checkboxes are checked
+    }
+    // Logic to open appropriate form based on signupType
+    if (signupType.is_customer && signupType.is_retailer) {
+      // Show both customer and retailer fields
+      setIsSignupR(true);
+    } else if (signupType.is_retailer) {
+      setIsSignupR(true);
+    } else {
+      setIsSignupR(false);
+    }
+  };
+
+
   const handleShowPassword = () => {
     setFormData({ ...formData, showPassword: !formData.showPassword });
   };
@@ -98,10 +151,17 @@ const LogInAndSignUp = () => {
   const handleSubmit = useCallback(
     async (event) => {
       event.preventDefault();
+      if (showPopup) {
+        return;  // Do not submit if the popup is still open
+      }
       try {
         if (!isSignup) {
           const { email, password } = formData;
-          const loginData = { email, password };
+          const loginData = { 
+            email, 
+            password ,
+            [userType]: true,
+          };
           console.log("user logged in:", loginData);
           const response = await loginUser(loginData);
           
@@ -113,19 +173,46 @@ const LogInAndSignUp = () => {
             navigate("/profile");
           }
         } else {
-          console.log("user signed up:", formData);
-          await createUser(formData);
+          let payload = {
+              username: formData.username,
+              email: formData.email,
+              password: formData.password,
+              password2: formData.password2,
+              address: formData.address,
+              phone_number: formData.phone_number,
+          };
+          if (signupType.is_customer) {
+            payload.is_customer = true;
+          }
+          if (signupType.is_retailer) {
+            payload.is_retailer = true;
+            payload.retailer = {
+              gst_no: formData.gst_no,
+              organization: formData.organization,
+            };
+          }
+          if (signupType.is_retailer && signupType.is_customer) {
+            payload.is_customer = true;
+            payload.is_retailer = true;
+            payload.retailer = {
+              gst_no: formData.gst_no,
+              organization: formData.organization,
+            };
+          }
+          console.log("user signed up:", payload);
+          await createUser(payload);
           window.location.reload();
         }
       } catch (e) {
         console.log(e);
       }
     },
-    [createUser, loginUser, navigate, formData, isSignup]
+    [createUser, loginUser, navigate, formData, isSignup, userType, isSignupR]
   );
 
   const resetState = () => {
     setIsSignup(!isSignup);
+    setIsSignupR(false);
     setFormData({
       username: "",
       email: "",
@@ -133,6 +220,8 @@ const LogInAndSignUp = () => {
       password2: "",
       address: "",
       phone_number: "",
+      gst_no:"",
+      organization:"",
       showPassword: false,
       tc: true
     });
@@ -157,6 +246,27 @@ const LogInAndSignUp = () => {
           <Typography variant="h2" padding={3} textAlign="center">
             {isSignup ? "Create User" : "LogIn User"}
           </Typography>
+          {!isSignup && (
+            <RadioGroup
+              row
+              aria-label="userType"
+              name="userType"
+              value={userType}
+              onChange={handleUserTypeChange}
+            >
+              <FormControlLabel
+                value="is_customer"
+                control={<Radio sx={{ color: "#ff9800", '&.Mui-checked': { color: '#ff9800' } }} />} // Custom color
+                label="Customer"
+              />
+              <FormControlLabel
+                value="is_retailer"
+                control={<Radio sx={{ color: "#ff9800", '&.Mui-checked': { color: '#ff9800' } }} />} // Custom color
+                label="Retailer"
+              />
+            </RadioGroup>
+          )}
+
           {isSignup && (
             <>
               <TextField
@@ -195,8 +305,37 @@ const LogInAndSignUp = () => {
                 error={!!errors.phone_number}
                 helperText={errors.phone_number}
               />
+              {isSignupR && (
+                <>
+                <TextField
+                  fullWidth
+                  onChange={handleChange}
+                  name="gst_no"
+                  value={formData.gst_no}
+                  margin="normal"
+                  type={"text"}
+                  variant="outlined"
+                  label="GST No"
+                  error={!!errors.gst_no}
+                  helperText={errors.gst_no}
+                />
+                <TextField
+                  fullWidth
+                  onChange={handleChange}
+                  name="organization"
+                  value={formData.organization}
+                  margin="normal"
+                  type={"text"}
+                  variant="outlined"
+                  label="Organization"
+                  error={!!errors.organization}
+                  helperText={errors.organization}
+                />
+                </>
+              )}
             </>
           )}
+
           <TextField
             fullWidth
             onChange={handleChange}
@@ -240,9 +379,11 @@ const LogInAndSignUp = () => {
               <LinearProgress
                 variant="determinate"
                 value={(passwordStrength / 4) * 100}
+                sx={{ backgroundColor: '#ff9800' }}
               />
             </Box>
           )}
+
           {isSignup && (
             <TextField
               label="Confirm Password"
@@ -270,6 +411,7 @@ const LogInAndSignUp = () => {
               }}
             />
           )}
+
           <Button
             endIcon={
               isSignup ? <HowToRegOutlinedIcon /> : <LoginOutlinedIcon />
@@ -285,13 +427,21 @@ const LogInAndSignUp = () => {
             endIcon={
               isSignup ? <LoginOutlinedIcon /> : <HowToRegOutlinedIcon />
             }
-            onClick={resetState}
+            onClick={isSignup ? handleToggleToLogin : handleSignupClick}
             sx={{ marginTop: 3, borderRadius: 3 }}
+            variant="contained" // Make it contained for a similar look
+            color="warning" // Apply the same warning color for uniformity
           >
-            User {isSignup ? "LogIn" : "Register"}{" "}
+            {isSignup ? "Already have an account? Log In" : "New User? Sign Up"}
           </Button>
         </Box>
       </form>
+      <SignupPopup 
+        open={showPopup} 
+        handleClose={handleClosePopup} 
+        handleCheckboxChange={handleCheckboxChange} 
+        signupType={signupType}
+      />
     </div>
   );
 };
