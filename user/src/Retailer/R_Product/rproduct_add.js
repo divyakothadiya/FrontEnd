@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Typography, TextField, Button, Grid, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -6,14 +6,20 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useServicesHook } from '../../Hooks/serviceHooks';
 
 const AddProductPage = () => {
-  const { addProduct } = useServicesHook();  
+  const { addProduct, updateProduct } = useServicesHook();  
   const location = useLocation();
   const navigate = useNavigate();
-  const { category } = location.state || {};
-  const [productName, setProductName] = useState('');
-  const [customFields, setCustomFields] = useState([{ key: '', value: '' }]);
-  const [images, setImages] = useState([]);
-  const [payload, setPayload] = useState([]);
+  const { category, product, isEdit } = location.state || {};
+  const [productName, setProductName] = useState(product?.name || '');
+  const [customFields, setCustomFields] = useState([]);
+  const [images, setImages] = useState(product?.images || []);
+
+  useEffect(() => {
+    if (isEdit && product && product.details) {
+      const fields = Object.entries(product.details).map(([key, value]) => ({ key, value }));
+      setCustomFields(fields);
+    }
+  }, [product, isEdit]);
 
   const addCustomField = () => {
     setCustomFields([...customFields, { key: '', value: '' }]);
@@ -30,7 +36,6 @@ const AddProductPage = () => {
     setCustomFields(newFields);
   };
 
-  // Handler to handle image uploads and convert them to Base64
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     const base64Promises = files.map((file) => {
@@ -47,7 +52,6 @@ const AddProductPage = () => {
     Promise.all(base64Promises)
       .then((base64Images) => {
         setImages((prevImages) => [...prevImages, ...base64Images]);
-        console.log("Images uploaded:", [...images, ...base64Images]); 
       })
       .catch((error) => {
         console.error("Error reading images", error);
@@ -61,38 +65,53 @@ const AddProductPage = () => {
 
   const handleSubmit = useCallback(
     async (event) => {
-      event.preventDefault(); // Prevent default form submission
+      event.preventDefault();
 
       try {
-          const newPayload = {
-            category: category,
-            product: {
-              name: productName,
-              images: [...images], // Assuming 'images' is already a base64 string array
-            },
-          };
-      
-          customFields.forEach((field) => {
+        let newPayload={}
+        if (isEdit) {
+            newPayload = {
+                category: category,
+                name: productName,
+                product: {
+                  images: [...images],
+                },
+              };
+          } else {
+            newPayload = {
+                category: category,
+                product: {
+                  name: productName,
+                  images: [...images],
+                },
+              };
+          }
+        
+
+        customFields.forEach((field) => {
             if (field.key && field.value) {
                 newPayload.product[field.key] = field.value;
             }
           });
-          setPayload(newPayload);
-      
-          console.log(JSON.stringify(payload, null, 2));
+
+        if (isEdit) {
+          console.log(newPayload);
+          await updateProduct(newPayload);
+        } else {
           await addProduct(newPayload);
-          navigate('/product-list'); // Adjust the route accordingly
+        }
+        navigate('/product-list');
       } catch (e) {
-        console.error("Error submitting update user form:", e);
+        console.error("Error submitting product form:", e);
       }
     },
-    [addProduct, payload, images,customFields, navigate]
+    [addProduct, updateProduct, images, customFields, navigate, productName, isEdit, category]
   );
 
   return (
     <div style={{ padding: '20px' }}>
       <Typography variant="h4" style={{ textAlign: 'center', marginBottom: '20px' }}>
-        Add Product
+        {isEdit ? 'Edit Product' : 'Add Product'}
       </Typography>
 
       <form onSubmit={handleSubmit}>
@@ -158,19 +177,6 @@ const AddProductPage = () => {
           </Grid>
         ))}
 
-        
-        {customFields.length === 0 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-            <IconButton 
-              aria-label="add" 
-              onClick={addCustomField} 
-              color="primary" 
-            >
-              <AddIcon />
-            </IconButton>
-          </div>
-        )}
-
         <Typography variant="h6" style={{ marginTop: '20px', marginBottom: '10px', textAlign: 'center' }}>
           Upload Product Images
         </Typography>
@@ -234,10 +240,9 @@ const AddProductPage = () => {
           ))}
         </Grid>
 
-        {/* Centered Submit Button */}
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
           <Button variant="contained" color="primary" type="submit">
-            Submit Product
+            {isEdit ? 'Update Product' : 'Submit Product'}
           </Button>
         </div>
       </form>
@@ -245,4 +250,4 @@ const AddProductPage = () => {
   );
 };
 
-export default AddProductPage
+export default AddProductPage;

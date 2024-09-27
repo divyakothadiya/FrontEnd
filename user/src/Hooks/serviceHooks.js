@@ -94,5 +94,17 @@ export function useServicesHook() {
             .catch(error => Promise.reject(error.message));
     }, []);
 
-    return { createUser,loginUser, updateUser, getProducts, addProduct, updateProduct, verifyUser};
+    const deleteProduct = useCallback((productDetails) => {
+        return axiosInstance.delete('product/product-update/',{
+            data: productDetails 
+        })
+            .then(data => {
+                if (data) {
+                    console.log("deleted product details:", data);
+                }
+            })
+            .catch(error => Promise.reject(error.message));
+    }, []);
+
+    return { createUser,loginUser, updateUser, getProducts, addProduct, updateProduct, verifyUser, deleteProduct};
 }
